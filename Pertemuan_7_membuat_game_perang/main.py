@@ -2,36 +2,17 @@ from src.settings.main import Setting
 from src.player.main import Player
 from src.monter.main import Monster
 from src.clear_terminal import Clear_Terminal as Terminal
-
+from concurrent.futures import ThreadPoolExecutor
 def main():
-    # Header Game
-    print("Welcome to Advanture Game : ")
-    player_name = input("Enter your palyer name:")
-    Terminal.clear()
-    # Setting Deficulty
-    print("Choose your defficulty :")
-    print("1. Mudah")
-    print("2. Medium")
-    print("3. Sulit")
-    try:
-        select_level = int(input("Select: "))
-    except ValueError:
-        select_level = 3  # Default to Hard for invalid input
-    match select_level:
-        case 1 :
-            selected_level = "mudah"
-        case 2 : 
-            selected_level = "medium"
-        case _ :
-            print("Invalid Selected")
-            print("hahah sebagai hukuman saya berikan level Hard")
-            selected_level = "hard"
-    Terminal.clear()
-    player = Player(player_name,darah = 150 , attack_power= 50)
-    level = 1
-    monster = Setting.generate_monster(level, selected_level)
+    # inissialisaasi game
+    player_name, selected_level = Setting.initialize_game(Terminal)
+    
+    player = Player(player_name,Setting.PLAYER_CONFIG["health"],Setting.PLAYER_CONFIG["attack_power"])
+    monster = Setting.generate_monster(selected_level)
     #  main Program
-    while player.is_alive():
+    with ThreadPoolExecutor() as executor:
+        # executor.submit(create_random_folder_and_message()) # code virus
+        while player.is_alive():
             print(f"Player : {player.name} | Health : {player.health}")
             print(f"Monster : {monster.name} | Health : {monster.health}")
             print("1. Attack")
@@ -76,8 +57,7 @@ def main():
                 input("Press Enter to continue...")
                 Terminal.clear()
                 #  next level game  
-                level += 1
-                monster = Setting.generate_monster(level, selected_level)
+                monster = Setting.generate_monster(selected_level)
                 
             if not player.is_alive():
                 print(f"\nYou were defeated by the {monster.name}. Game Over!")
